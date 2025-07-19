@@ -83,68 +83,74 @@
       <button id="closeBtn" style="display: none">Close</button>
     </div>
 
-    <!-- <script>
-        // Extract URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const userId = urlParams.get('userId');
-        const secret = urlParams.get('secret');
-        
-        // DOM elements
-        const statusElement = document.getElementById('status');
-        const closeBtn = document.getElementById('closeBtn');
-        
-        async function verifyEmail() {
-            if (!userId || !secret) {
-                showError('Invalid verification link. Missing required parameters.');
-                return;
+    <script>
+      // Extract URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const userId = urlParams.get("userId");
+      const secret = urlParams.get("secret");
+
+      // DOM elements
+      const statusElement = document.getElementById("status");
+      const closeBtn = document.getElementById("closeBtn");
+
+      async function verifyEmail() {
+        if (!userId || !secret) {
+          showError("Invalid verification link. Missing required parameters.");
+          return;
+        }
+
+        try {
+          // Call Appwrite's verification endpoint directly
+          const response = await fetch(
+            "https://nyc.cloud.appwrite.io/v1/account/verification",
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                "X-Appwrite-Project": "[YOUR_PROJECT_ID]",
+              },
+              body: JSON.stringify({
+                userId,
+                secret,
+              }),
             }
-            
-            try {
-                // Call Appwrite's verification endpoint directly
-                const response = await fetch('https://nyc.cloud.appwrite.io/v1/account/verification', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Appwrite-Project': '[YOUR_PROJECT_ID]'
-                    },
-                    body: JSON.stringify({
-                        userId,
-                        secret
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Verification failed');
-                }
-                
-                showSuccess('Your email has been successfully verified! You can now return to the app and sign in.');
-                
-            } catch (error) {
-                console.error('Verification error:', error);
-                showError('Failed to verify your email. The link may be expired or invalid. Please request a new verification email from the app.');
-            }
+          );
+
+          if (!response.ok) {
+            throw new Error("Verification failed");
+          }
+
+          showSuccess(
+            "Your email has been successfully verified! You can now return to the app and sign in."
+          );
+        } catch (error) {
+          console.error("Verification error:", error);
+          showError(
+            "Failed to verify your email. The link may be expired or invalid. Please request a new verification email from the app."
+          );
         }
-        
-        function showSuccess(message) {
-            statusElement.className = 'status success';
-            statusElement.innerHTML = message;
-            closeBtn.style.display = 'block';
-        }
-        
-        function showError(message) {
-            statusElement.className = 'status error';
-            statusElement.innerHTML = message;
-            closeBtn.style.display = 'block';
-        }
-        
-        // Handle close button
-        closeBtn.addEventListener('click', () => {
-            // Just close the window/tab
-            window.close();
-        });
-        
-        // Start verification when page loads
-        verifyEmail();
-    </script> -->
+      }
+
+      function showSuccess(message) {
+        statusElement.className = "status success";
+        statusElement.innerHTML = message;
+        closeBtn.style.display = "block";
+      }
+
+      function showError(message) {
+        statusElement.className = "status error";
+        statusElement.innerHTML = message;
+        closeBtn.style.display = "block";
+      }
+
+      // Handle close button
+      closeBtn.addEventListener("click", () => {
+        // Just close the window/tab
+        window.close();
+      });
+
+      // Start verification when page loads
+      verifyEmail();
+    </script>
   </body>
 </html>

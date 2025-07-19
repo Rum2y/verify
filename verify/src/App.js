@@ -15,6 +15,7 @@ export default function VerifyPage() {
   const [actionType, setActionType] = useState(""); // 'verify' or 'recovery'
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordChanged, setPasswordChanged] = useState(false);
   const [passwordError, setPasswordError] = useState("");
 
   useEffect(() => {
@@ -34,10 +35,14 @@ export default function VerifyPage() {
         if (determinedAction === "verify") {
           await account.updateVerification(userId, secret);
           setStatus("success");
-        } else if (determinedAction === "recovery") {
-          // For password recovery, we just validate the token and wait for new password
-          await account.getRecovery(userId, secret);
-          setStatus("ready-for-password");
+        } else if (determinedAction === "recovery" && passwordChanged) {
+          await account.updateRecovery(
+            userId,
+            secret,
+            newPassword,
+            newPassword
+          );
+          setStatus("password-changed");
         }
       } catch (error) {
         console.error("Processing error:", error);
@@ -46,7 +51,7 @@ export default function VerifyPage() {
     };
 
     processAction();
-  }, []);
+  }, [passwordChanged]);
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
@@ -56,25 +61,13 @@ export default function VerifyPage() {
       return;
     }
 
-    if (newPassword.length < 8) {
-      setPasswordError("Password must be at least 8 characters");
+    if (newPassword.length < 6) {
+      setPasswordError("Password must be at least 6 characters");
       return;
     }
 
+    setPasswordChanged(true);
     setPasswordError("");
-    setStatus("processing");
-
-    try {
-      const searchParams = new URLSearchParams(window.location.search);
-      const userId = searchParams.get("userId");
-      const secret = searchParams.get("secret");
-
-      await account.updateRecovery(userId, secret, newPassword, newPassword);
-      setStatus("password-changed");
-    } catch (error) {
-      console.error("Password change error:", error);
-      setStatus("password-error");
-    }
   };
 
   if (status === "loading") return <p>Loading...</p>;
@@ -136,8 +129,6 @@ export default function VerifyPage() {
             </form>
           </div>
         );
-      case "processing":
-        return <p>Updating your password...</p>;
       case "password-changed":
         return (
           <div>

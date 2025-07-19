@@ -15,43 +15,45 @@ export default function VerifyPage() {
   const [actionType, setActionType] = useState(""); // 'verify' or 'recovery'
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [passwordChanged, setPasswordChanged] = useState(false);
   const [passwordError, setPasswordError] = useState("");
+  const [userId, setUserId] = useState("");
+  const [secret, setSecret] = useState("");
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
-    const userId = searchParams.get("userId");
-    const secret = searchParams.get("secret");
+    const urlUserId = searchParams.get("userId");
+    const urlSecret = searchParams.get("secret");
     const action = searchParams.get("mode");
+
+    if (!urlUserId || !urlSecret) {
+      setStatus("error");
+      return;
+    }
+
+    setUserId(urlUserId);
+    setSecret(urlSecret);
 
     // Determine if this is a verification or password recovery
     const determinedAction = action === "reset" ? "recovery" : "verify";
     setActionType(determinedAction);
 
-    const processAction = async () => {
-      try {
-        if (!userId || !secret) throw new Error("Missing parameters");
+    if (determinedAction === "verify") {
+      verifyEmail(urlUserId, urlSecret);
+    } else {
+      // For recovery, just show the password form
+      setStatus("ready-for-password");
+    }
+  }, []);
 
-        if (determinedAction === "verify") {
-          await account.updateVerification(userId, secret);
-          setStatus("success");
-        } else if (determinedAction === "recovery" && passwordChanged) {
-          await account.updateRecovery(
-            userId,
-            secret,
-            newPassword,
-            newPassword
-          );
-          setStatus("password-changed");
-        }
-      } catch (error) {
-        console.error("Processing error:", error);
-        setStatus("error");
-      }
-    };
-
-    processAction();
-  }, [passwordChanged]);
+  const verifyEmail = async (userId, secret) => {
+    try {
+      await account.updateVerification(userId, secret);
+      setStatus("success");
+    } catch (error) {
+      console.error("Verification error:", error);
+      setStatus("error");
+    }
+  };
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
@@ -66,8 +68,13 @@ export default function VerifyPage() {
       return;
     }
 
-    setPasswordChanged(true);
-    setPasswordError("");
+    try {
+      await account.updateRecovery(userId, secret, newPassword, newPassword);
+      setStatus("password-changed");
+    } catch (error) {
+      console.error("Password change error:", error);
+      setStatus("password-error");
+    }
   };
 
   if (status === "error") return <h2>Invalid or expired link ❌</h2>;
@@ -142,9 +149,9 @@ export default function VerifyPage() {
           </div>
         );
       default:
-        return <h2>Invalid request ❌</h2>;
+        return <h2>Loading...</h2>;
     }
   }
 
-  return <h2>Invalid request ❌</h2>;
+  return <h2>Loading...</h2>;
 }

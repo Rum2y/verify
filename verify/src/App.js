@@ -11,7 +11,7 @@ export const account = new Account(client);
 export { ID } from "appwrite";
 
 export default function VerifyPage() {
-  const [status, setStatus] = useState("loading");
+  const [status, setStatus] = useState("");
   const [actionType, setActionType] = useState(""); // 'verify' or 'recovery'
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -69,8 +69,6 @@ export default function VerifyPage() {
     setPasswordChanged(true);
     setPasswordError("");
   };
-
-  if (status === "loading") return <p>Loading...</p>;
 
   if (status === "error") return <h2>Invalid or expired link ❌</h2>;
 

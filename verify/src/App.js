@@ -21,10 +21,10 @@ export default function VerifyPage() {
     const searchParams = new URLSearchParams(window.location.search);
     const userId = searchParams.get("userId");
     const secret = searchParams.get("secret");
-    const action = searchParams.get("action");
+    const action = searchParams.get("mode");
 
     // Determine if this is a verification or password recovery
-    const determinedAction = action === "recovery" ? "recovery" : "verify";
+    const determinedAction = action === "reset" ? "recovery" : "verify";
     setActionType(determinedAction);
 
     const processAction = async () => {
